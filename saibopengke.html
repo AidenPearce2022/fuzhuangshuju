@@ -3,32 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>潮牌数字实验室 · 自媒体数据分析</title>
-    <!-- Font Awesome 6 (保留图标) -->
+    <title>潮数实验室 · 自媒体数据分析</title>
+    <!-- Font Awesome 6 (免费版，包含tiktok等潮流图标) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
         }
 
-        /* 大理石花纹背景 — 使用多重柔和渐变模拟天然石材纹理 */
         body {
-            background-color: #eae9ee;                /* 基底暖灰 */
-            background-image: 
-                radial-gradient(circle at 15% 30%, rgba(180, 175, 170, 0.15) 0%, transparent 25%),
-                radial-gradient(circle at 85% 70%, rgba(150, 145, 140, 0.12) 0%, transparent 35%),
-                radial-gradient(circle at 40% 80%, rgba(200, 195, 190, 0.1) 0%, transparent 40%),
-                linear-gradient(145deg, rgba(210, 205, 200, 0.08) 0%, rgba(210, 205, 200, 0.08) 20%, transparent 20%, transparent 80%),
-                linear-gradient(35deg, rgba(190, 185, 180, 0.06) 0%, rgba(190, 185, 180, 0.06) 15%, transparent 15%, transparent 85%),
-                repeating-linear-gradient(45deg, rgba(170, 165, 160, 0.02) 0px, rgba(170, 165, 160, 0.02) 2px, transparent 2px, transparent 8px);
+            background: #0b0b0f;
+            background-image: radial-gradient(circle at 20% 30%, #2a1a4a 0%, #0a0a0f 80%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             padding: 16px 12px;
-            color: #1e1e1e;
+            color: #ffffff;
         }
 
         /* 手机卡片容器 */
@@ -40,7 +33,7 @@
             gap: 20px;
         }
 
-        /* 标题区 — 极简 */
+        /* 标题区 + 小涂鸦 */
         .header {
             display: flex;
             align-items: center;
@@ -49,73 +42,74 @@
         }
         .header h1 {
             font-size: 1.7rem;
-            font-weight: 600;
-            color: #2b2b2b;
-            letter-spacing: -0.3px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            font-weight: 800;
+            background: linear-gradient(130deg, #ffb347, #ff6b9d, #a05fff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            text-shadow: 0 0 15px #ff6b9d80;
         }
         .graffiti {
             font-size: 2rem;
-            color: #7f7f7f;
-            opacity: 0.4;
-            rotate: 5deg;
+            filter: drop-shadow(0 0 8px cyan);
+            opacity: 0.7;
+            rotate: 8deg;
         }
 
-        /* 通用卡片 — 磨砂玻璃效果，半透明白色底+模糊 */
+        /* 通用卡片风格 — 毛玻璃+霓虹边 */
         .card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            border-radius: 28px;
-            padding: 18px 20px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.02) inset;
+            background: rgba(18, 18, 28, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 120, 200, 0.3);
+            border-radius: 32px;
+            padding: 16px 18px;
+            box-shadow: 0 10px 30px -10px #ff44aa40, inset 0 0 20px #ffffff08;
         }
 
         /* 按钮组通用 */
         .btn-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             margin: 8px 0 4px;
         }
         .btn-group .btn {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border: 1px solid rgba(0, 0, 0, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 80, 180, 0.6);
             border-radius: 40px;
-            padding: 8px 16px;
+            padding: 10px 18px;
             font-size: 0.9rem;
-            font-weight: 500;
-            color: #2d2d2d;
-            transition: all 0.15s ease;
+            font-weight: 600;
+            color: #eee;
+            box-shadow: 0 0 10px #ff44aa20;
+            transition: all 0.15s;
             flex: 0 1 auto;
+            backdrop-filter: blur(4px);
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             white-space: nowrap;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .btn-group .btn i {
             font-size: 1.1rem;
-            color: #5c5c5c;
+            color: #ffb2d9;
         }
         .btn-group .btn.active {
-            background: #2c2c2c;
-            border-color: #2c2c2c;
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: #ff3b9b;
+            border-color: #fff;
+            color: white;
+            box-shadow: 0 0 25px #ff3b9b, 0 4px 10px black;
+            border-width: 2px;
         }
         .btn-group .btn.active i {
-            color: #ffffff;
+            color: white;
         }
         .btn-group .btn:active {
             transform: scale(0.96);
         }
 
-        /* 水平滑动容器 (用于平台过滤按钮) */
+        /* 水平滑动容器 (用于平台过滤按钮, 手机触摸) */
         .scroll-x {
             display: flex;
             flex-wrap: nowrap;
@@ -132,20 +126,21 @@
             flex: 0 0 auto;
         }
 
-        /* 账号切换区 badge */
+        /* 账号切换区 (加一点小装饰) */
+        .account-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
         .platform-badge {
-            background: rgba(0, 0, 0, 0.03);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            background: #ffb34730;
             border-radius: 50px;
             padding: 4px 12px;
-            font-size: 0.75rem;
-            color: #4b4b4b;
-            border: 1px solid rgba(0,0,0,0.06);
-            font-weight: 500;
+            font-size: 0.8rem;
+            border: 1px solid #ffb347;
         }
 
-        /* 四个核心指标卡片 — 更凸显数据 */
+        /* 四个核心指标卡片 */
         .metrics-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -153,186 +148,179 @@
             margin: 8px 0;
         }
         .metric-item {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 22px;
-            padding: 18px 8px;
-            border: 1px solid rgba(255,255,255,0.7);
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 28px;
+            padding: 18px 12px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 200, 100, 0.3);
+            box-shadow: inset 0 0 40px #ff842610;
             text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
         }
         .metric-value {
-            font-size: 2.3rem;           /* 更大更突出 */
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             line-height: 1.2;
-            color: #1a1a1a;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.03);
+            background: linear-gradient(135deg, #fff8, #ffd5b0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .metric-label {
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #6b6b6b;
+            letter-spacing: 1.5px;
+            color: #bbb;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 4px;
-            margin-top: 4px;
-            font-weight: 500;
         }
         .metric-label i {
-            color: #808080;
+            color: #ffaa70;
         }
 
         /* 平台卡片区 (下单平台) */
         .platform-grid {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
             margin-top: 12px;
         }
         .platform-card {
-            background: rgba(255, 255, 255, 0.55);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 26px;
             padding: 16px;
-            border: 1px solid rgba(255,255,255,0.7);
+            border: 1px solid #ff55b080;
+            box-shadow: 0 0 20px #ff44aa10;
             transition: 0.1s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
         }
         .platform-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .platform-name {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: #2b2b2b;
+            gap: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
         }
         .platform-name i {
-            font-size: 1.5rem;
-            width: 30px;
-            color: #5c5c5c;
+            font-size: 1.6rem;
+            width: 32px;
+            color: #ffb7d2;
         }
         .orders-count {
-            font-weight: 600;
-            font-size: 1.5rem;          /* 稍微增大订单数字 */
-            color: #1a1a1a;
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #fbd07c, #ff8aa1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         .progress-bar-bg {
-            background: rgba(0,0,0,0.08);
-            height: 6px;
+            background: #2f2f3f;
+            height: 8px;
             border-radius: 20px;
             overflow: hidden;
-            margin: 12px 0 6px;
-            backdrop-filter: blur(2px);
+            margin: 10px 0 6px;
         }
         .progress-fill {
-            height: 6px;
+            height: 8px;
             border-radius: 20px;
-            background: #3a3a3a;
+            background: linear-gradient(90deg, #f97e8a, #ffd271, #b77ef0);
             width: 0%;
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.2);
+            box-shadow: 0 0 12px #ffaeff;
         }
         .platform-sub {
             display: flex;
             justify-content: space-between;
-            color: #7a7a7a;
-            font-size: 0.7rem;
-            font-weight: 500;
+            color: #aaa;
+            font-size: 0.75rem;
         }
 
         /* 视频小衣服标记 */
         .product-tag {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(2px);
-            -webkit-backdrop-filter: blur(2px);
+            background: #b45eff30;
             border-radius: 40px;
             padding: 6px 14px;
             margin-top: 6px;
             font-size: 0.8rem;
-            border: 1px solid rgba(0,0,0,0.06);
-            color: #3f3f3f;
+            border: 1px dashed #ff84d5;
+            color: #ffcfcf;
         }
         .product-tag i {
             margin-right: 6px;
-            color: #717171;
         }
 
         /* 底部装饰 */
         .footer-note {
             text-align: center;
             font-size: 0.7rem;
-            color: #8f8f8f;
-            letter-spacing: 1.5px;
+            color: #aaa;
+            letter-spacing: 2px;
             margin-top: 25px;
-            border-top: 1px solid rgba(0,0,0,0.08);
+            border-top: 1px solid #ff44aa30;
             padding-top: 20px;
         }
 
         /* 工具类 */
+        .space-y-8 > * + * { margin-top: 8px; }
+        .text-glow { text-shadow: 0 0 12px magenta; }
         .flex-row { display: flex; align-items: center; gap: 6px; }
-        .text-muted { color: #7a7a7a; }
     </style>
 </head>
 <body>
     <div class="dashboard" id="app">
 
-        <!-- 头部极简 -->
+        <!-- 头部潮流氛围 -->
         <div class="header">
             <h1>CATSSTAC · 数据中心</h1>
-            <div class="graffiti">◼︎◻︎</div>
+            <div class="graffiti">🔥👕</div>
         </div>
 
-        <!-- 账号切换 -->
-        <div class="card" style="padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                <span class="flex-row"><i class="fa-regular fa-user" style="color:#5f5f5f;"></i> 切换自媒体账号</span>
+        <!-- 账号切换 (自媒体平台 + IP账号) 用按钮组 -->
+        <div class="card" style="padding: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <span style="color:#ffb8d9;"><i class="fa-regular fa-user"></i> 切换自媒体账号</span>
                 <span class="platform-badge" id="active-account-platform">抖音</span>
             </div>
             <div class="btn-group" id="accountBtns">
-                <!-- JS动态生成 -->
+                <!-- 动态JS生成两个账号按钮 -->
             </div>
         </div>
 
-        <!-- 爆款视频切换区 -->
+        <!-- 爆款视频切换区 (带衣服产品标签) -->
         <div class="card">
-            <div class="flex-row" style="margin-bottom: 8px; color:#4f4f4f;">
-                <i class="fa-solid fa-play"></i>
-                <span style="font-weight: 400;">视频选择</span>
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 6px;">
+                <i class="fa-solid fa-play" style="color: #ff5eaa;"></i>
+                <span style="font-weight: 200;">爆款视频·选择</span>
             </div>
             <div class="btn-group" id="videoBtns">
                 <!-- 动态视频按钮 A B C -->
             </div>
-            <!-- 当前视频主推衣服 -->
+            <!-- 当前视频主推潮流衣服展示 -->
             <div id="currentProductTag" class="product-tag">
-                <i class="fa-solid fa-shirt"></i> 基本款卫衣
+                <i class="fa-solid fa-shirt"></i> 印花卫衣
             </div>
         </div>
 
-        <!-- 核心指标卡片 -->
+        <!-- 核心指标卡片 (完播率 评论 曝光 成单) -->
         <div class="card">
-            <div class="flex-row" style="margin-bottom: 8px; color:#4f4f4f;">
+            <div style="display: flex; gap: 10px; margin-bottom: 4px;">
                 <i class="fa-regular fa-chart-line"></i> 视频表现
             </div>
             <div class="metrics-grid" id="metricCards">
-                <!-- 由js填充 -->
+                <!-- 由js填充四个卡片 -->
             </div>
         </div>
 
-        <!-- 下单平台转化区 -->
+        <!-- 下单平台转化区 (带过滤按钮) -->
         <div class="card">
             <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px;">
-                <span class="flex-row"><i class="fa-regular fa-bag-shopping"></i> 下单平台转化</span>
-                <!-- 平台过滤按钮可滚动 -->
+                <span><i class="fa-regular fa-bag-shopping"></i> 下单平台转化</span>
+                <!-- 平台过滤按钮 可滚动 -->
                 <div class="scroll-x" id="platformFilter">
                     <!-- 全部 淘宝 抖音 快手 小红书 -->
                 </div>
@@ -343,15 +331,16 @@
             </div>
         </div>
 
-        <!-- 底部 -->
+        <!-- 潮流注脚 -->
         <div class="footer-note">
-            <span># CATSSTAC · 数据中心 · 2026 · CopyRight #</span>
+            <span># 街头数据实验室 #</span>
         </div>
     </div>
 
     <script>
         (function() {
-            // 数据保持不变
+            // ---------- 潮流模拟数据 ----------
+            // 两个自媒体账号 (不同平台)
             const accounts = [
                 {
                     id: 'acc1',
@@ -386,7 +375,7 @@
                     id: 'acc2',
                     name: '阿泷个人号',
                     platform: '小红书',
-                    platformIcon: 'fa-regular fa-note-sticky',
+                    platformIcon: 'fa-regular fa-note-sticky', // 代替小红书图标
                     videos: [
                         { 
                             title: '爆款A · 美式卫衣', 
@@ -413,27 +402,32 @@
                 }
             ];
 
+            // 下单平台展示配置 (用于过滤与显示)
             const platformConfig = [
-                { key: 'taobao', label: '淘宝', icon: 'fa-solid fa-bag-shopping' },
-                { key: 'douyin', label: '抖音', icon: 'fa-brands fa-tiktok' },
-                { key: 'kuaishou', label: '快手', icon: 'fa-brands fa-snapchat' },
+                { key: 'taobao', label: '淘宝', icon: 'fa-brands fa-taobao' },
+                { key: 'douyin', label: '抖音', icon: 'fa-brands fa-tiktok' },  // 抖音用tiktok占位，风格无碍
+                { key: 'kuaishou', label: '快手', icon: 'fa-brands fa-snapchat' }, // 快手无官方，用幽灵占位
                 { key: 'xiaohongshu', label: '小红书', icon: 'fa-regular fa-bookmark' }
             ];
 
+            // 当前选中的账号索引、视频索引、平台过滤条件
             let currentAccIdx = 0;
             let currentVideoIdx = 0;
-            let currentPlatformFilter = 'all';
+            let currentPlatformFilter = 'all';   // 'all', 'taobao', 'douyin', ...
 
+            // 获取当前视频数据
             function getCurrentVideo() {
                 return accounts[currentAccIdx].videos[currentVideoIdx];
             }
 
+            // 格式化数字 (k, w)
             function formatNumber(num) {
                 if (num >= 100000) return (num / 10000).toFixed(1) + 'w';
                 if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
                 return num.toString();
             }
 
+            // 渲染账号按钮、视频按钮、所有卡片 + 平台过滤
             function renderEverything() {
                 renderAccountButtons();
                 renderVideoButtons();
@@ -444,11 +438,15 @@
                 updateAccountPlatformBadge();
             }
 
+            // 更新右上角平台小徽章
             function updateAccountPlatformBadge() {
                 const badge = document.getElementById('active-account-platform');
-                if (badge) badge.innerText = accounts[currentAccIdx].platform;
+                if (badge) {
+                    badge.innerText = accounts[currentAccIdx].platform;
+                }
             }
 
+            // 账号按钮生成
             function renderAccountButtons() {
                 const container = document.getElementById('accountBtns');
                 if (!container) return;
@@ -461,8 +459,8 @@
                     btn.addEventListener('click', () => {
                         if (currentAccIdx !== idx) {
                             currentAccIdx = idx;
-                            currentVideoIdx = 0;
-                            currentPlatformFilter = 'all';
+                            currentVideoIdx = 0;        // 切换账号默认第一个视频
+                            currentPlatformFilter = 'all'; // 重置过滤
                             renderEverything();
                         }
                     });
@@ -470,6 +468,7 @@
                 });
             }
 
+            // 视频按钮 (A/B/C)
             function renderVideoButtons() {
                 const container = document.getElementById('videoBtns');
                 if (!container) return;
@@ -478,12 +477,13 @@
                 videos.forEach((video, idx) => {
                     const btn = document.createElement('button');
                     btn.className = `btn ${idx === currentVideoIdx ? 'active' : ''}`;
-                    btn.innerHTML = `${video.productIcon} 爆款${String.fromCharCode(65 + idx)}`;
+                    // 使用衣服表情让界面更潮
+                    btn.innerHTML = `${video.productIcon} 爆款${String.fromCharCode(65 + idx)}`; // A,B,C
                     btn.dataset.index = idx;
                     btn.addEventListener('click', () => {
                         if (currentVideoIdx !== idx) {
                             currentVideoIdx = idx;
-                            currentPlatformFilter = 'all';
+                            currentPlatformFilter = 'all'; // 切换视频重置过滤
                             renderEverything();
                         }
                     });
@@ -491,6 +491,7 @@
                 });
             }
 
+            // 产品tag更新 (当前视频主推)
             function updateProductTag() {
                 const tagDiv = document.getElementById('currentProductTag');
                 if (!tagDiv) return;
@@ -498,6 +499,7 @@
                 tagDiv.innerHTML = `<i class="fa-regular fa-star"></i> 主推 · ${v.productIcon} ${v.product}`;
             }
 
+            // 指标卡片渲染 (完播率, 评论, 曝光, 成单)
             function renderMetricCards() {
                 const grid = document.getElementById('metricCards');
                 if (!grid) return;
@@ -527,7 +529,7 @@
                 `;
             }
 
-            // 平台过滤按钮 (淘宝图标去掉)
+            // 平台过滤按钮 (全部,淘宝,抖音,快手,小红书)
             function renderPlatformFilterButtons() {
                 const container = document.getElementById('platformFilter');
                 if (!container) return;
@@ -540,11 +542,11 @@
                 allBtn.addEventListener('click', () => {
                     currentPlatformFilter = 'all';
                     renderPlatformCards();
-                    renderPlatformFilterButtons();
+                    renderPlatformFilterButtons(); // 刷新高亮
                 });
                 container.appendChild(allBtn);
 
-                // 各平台按钮 (淘宝特殊处理：不显示图标)
+                // 各平台按钮
                 platformConfig.forEach(p => {
                     const btn = document.createElement('button');
                     btn.className = `btn ${currentPlatformFilter === p.key ? 'active' : ''}`;
@@ -558,7 +560,7 @@
                 });
             }
 
-            // 绘制下单平台卡片 (淘宝图标去除)
+            // 绘制下单平台卡片 (依据过滤条件)
             function renderPlatformCards() {
                 const container = document.getElementById('platformList');
                 if (!container) return;
@@ -566,14 +568,16 @@
                 const platformOrders = video.platforms;
                 const totalOrders = video.orders;
 
+                // 决定要展示哪些平台key
                 let displayedPlatforms = [];
                 if (currentPlatformFilter === 'all') {
                     displayedPlatforms = platformConfig.map(p => p.key);
                 } else {
+                    // 如果过滤的key存在，就展示那一个 (但需要确保key有效)
                     if (platformConfig.some(p => p.key === currentPlatformFilter)) {
                         displayedPlatforms = [currentPlatformFilter];
                     } else {
-                        displayedPlatforms = [];
+                        displayedPlatforms = []; // fallback
                     }
                 }
 
@@ -588,15 +592,12 @@
                     if (!config) return;
                     const orderValue = platformOrders[key] || 0;
                     const percent = totalOrders > 0 ? (orderValue / totalOrders) * 100 : 0;
-
-                    // 淘宝特殊处理：不显示图标，用一个空白占位符保持对齐
-                    let iconHtml = `<i class="${config.icon}"></i>`;   // 淘宝也会显示图标
-
+                    // 平台显示名称和图标
                     htmlStr += `
                         <div class="platform-card">
                             <div class="platform-row">
                                 <span class="platform-name">
-                                    ${iconHtml} ${config.label}
+                                    <i class="${config.icon}"></i> ${config.label}
                                 </span>
                                 <span class="orders-count">${orderValue}</span>
                             </div>
@@ -614,9 +615,11 @@
                 container.innerHTML = htmlStr;
             }
 
+            // 初始化所有事件、首次渲染
             document.addEventListener('DOMContentLoaded', () => {
                 renderEverything();
             });
+
         })();
     </script>
 </body>
