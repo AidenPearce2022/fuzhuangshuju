@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>带货视频ROI监控 · 双平台分隔版</title>
+    <!-- Chart.js 轻量可视化 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Font Awesome 图标库 (免费) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: #f5f7fb;
+            padding: 16px 12px 32px;
+            min-height: 100vh;
+        }
+        .dashboard {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        /* 头部 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header h1 i {
+            color: #f97316;
+        }
+        .refresh-btn {
+            background: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e2e8f0;
+            backdrop-filter: blur(2px);
+        }
+        .refresh-btn i {
+            font-size: 0.9rem;
+        }
+        .refresh-btn:active {
+            background: #f0f9ff;
+        }
+
+        /* 顶部摘要卡片 —— 双平台分隔 + 汇总 */
+        .summary-cards {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .summary-item {
+            background: white;
+            border-radius: 20px;
+            padding: 14px 16px;
+            flex: 1 1 0;
+            min-width: 130px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid #f0f2f5;
+        }
+        .summary-item .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .summary-item .value {
+            font-size: 1.6rem;
+            font-weight: 650;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .platform-breakdown {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 6px;
+        }
+        .platform-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 30px;
+            padding: 4px 8px;
+            min-width: 70px;
+        }
+        .platform-item.douyin {
+            color: #2563eb;
+        }
+        .platform-item.taobao {
+            color: #ea580c;
+        }
+        .platform-item .amount {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .badge-platform {
+            background: #eef2ff;
+            color: #4f46e5;
+            border-radius: 100px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: #475569;
+        }
+
+        /* 视频卡片列表 */
+        .video-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 24px 0 28px;
+        }
+        .video-card {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.02);
+            border: 1px solid #f1f4f9;
+            transition: all 0.1s;
+        }
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .blogger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .blogger i {
+            font-size: 1.2rem;
+            color: #ff5e7c;
+            background: #ffe4e8;
+            border-radius: 40px;
+            padding: 6px;
+        }
+        .blogger-info {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .blogger-info .style-tag {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #6b7280;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 40px;
+            margin-left: 6px;
+        }
+        .cost-badge {
+            background: #f1f5f9;
+            border-radius: 40px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 12px 0 10px;
+        }
+        .stat-cell {
+            text-align: center;
+        }
+        .stat-value {
+            font-weight: 650;
+            font-size: 1rem;
+            color: #1e293b;
+        }
+        .stat-label {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .extra-stats {
+            display: flex;
+            gap: 16px;
+            padding: 8px 0;
+            border-top: 1px dashed #e9edf2;
+            border-bottom: 1px dashed #e9edf2;
+            font-size: 0.8rem;
+            color: #334155;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .extra-stats span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .sales-row {
+            background: #f8fafd;
+            border-radius: 18px;
+            padding: 10px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0 4px;
+        }
+        .sales-metrics {
+            display: flex;
+            gap: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .sales-metrics div {
+            text-align: center;
+        }
+        .sales-metrics .number {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: #0f172a;
+        }
+        .roi-indicator {
+            background: #dcfce7;
+            color: #166534;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+        .roi-indicator.neutral {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* 趋势图表区 */
+        .chart-container {
+            background: white;
+            border-radius: 26px;
+            padding: 18px 12px 12px;
+            border: 1px solid #ecf1f7;
+            margin-top: 8px;
+        }
+        .chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2a41;
+            margin-bottom: 8px;
+            padding-left: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .chart-box {
+            height: 160px;
+            width: 100%;
+            position: relative;
+        }
+        .platform-note {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 6px;
+            font-size: 0.6rem;
+            color: #475569;
+        }
+        .footer-note {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #a0afbe;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- 头部 + 刷新按钮 -->
+    <div class="header">
+        <h1><i class="fas fa-chart-line"></i> 带货镜像</h1>
+        <button class="refresh-btn" id="refreshDataBtn"><i class="fas fa-sync-alt"></i> 刷新数据</button>
+    </div>
+
+    <!-- 汇总卡片：双平台分隔 + 汇总 -->
+    <div class="summary-cards">
+        <!-- 卡片1: 总销售额 (含抖音/淘宝细分) -->
+        <div class="summary-item">
+            <div class="label">总销售额</div>
+            <div class="value" id="totalRevenue">¥0</div>
+            <div class="platform-breakdown">
+                <div class="platform-item douyin"><i class="fab fa-tiktok"></i> <span class="amount" id="douyinRevenue">¥0</span></div>
+                <div class="platform-item taobao"><i class="fab fa-alipay"></i> <span class="amount" id="taobaoRevenue">¥0</span></div>
+            </div>
+        </div>
+        <!-- 卡片2: 总订单量 (含抖音/淘宝细分) -->
+        <div class="summary-item">
+            <div class="label">总订单</div>
+            <div class="value" id="totalOrders">0</div>
+            <div class="platform-breakdown">
+                <div class="platform-item douyin"><i class="fab fa-tiktok"></i> <span class="amount" id="douyinOrders">0</span></div>
+                <div class="platform-item taobao"><i class="fab fa-alipay"></i> <span class="amount" id="taobaoOrders">0</span></div>
+            </div>
+        </div>
+        <!-- 卡片3: 平均ROI + 总成本 -->
+        <div class="summary-item">
+            <div class="label">平均 ROI</div>
+            <div class="value" id="avgRoi">0.0x</div>
+            <div class="cost-row">
+                <span><i class="fa-regular fa-credit-card"></i> 总成本</span>
+                <span id="totalCost">¥0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 视频动态列表 (核心) 通过js渲染 -->
+    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <span style="font-weight: 600; font-size: 1rem; color:#1e293b;"><i class="fas fa-video" style="margin-right: 6px;"></i>正在监控的带货视频</span>
+        <span style="color:#3b82f6; font-size:0.7rem;">API 限额 300次/日</span>
+    </div>
+    <div id="videoListContainer" class="video-feed">
+        <!-- JS 动态填充 -->
+    </div>
+
+    <!-- 趋势可视化：匹配曲线 (视频播放量 vs 对应款式销售额) -->
+    <div class="chart-container">
+        <div class="chart-title">
+            <i class="fas fa-chart-simple" style="color:#f97316;"></i>
+            <span id="chartStyleLabel">「印花T恤」播放量 vs 销售额趋势</span>
+        </div>
+        <div class="chart-box">
+            <canvas id="trendChart"></canvas>
+        </div>
+        <div class="platform-note">
+            <span><i class="fas fa-eye" style="color:#3b82f6;"></i> 视频播放量 (万次)</span>
+            <span><i class="fas fa-coins" style="color:#eab308;"></i> 款式销售额 (百元)</span>
+        </div>
+    </div>
+    <div class="footer-note">
+        ⚡ 模拟第三方API实时数据 · 双平台销售归因
+    </div>
+</div>
+
+<script>
+    (function() {
+        // 确保DOM加载完成再执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // ----- 模拟数据模型 -----
+            const STYLES = ['印花T恤', '牛仔外套', '运动卫衣'];
+            const BLOGGERS = ['@时尚小鱼', '@潮男阿杰', '@小野妹子'];
+
+            // 存储当前视频数据
+            let videos = [];
+            let chartInstance = null;
+
+            // 工具函数：随机数范围
+            const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+            // 生成单条视频数据 (包含双平台拆分)
+            function generateVideo(index) {
+                const style = STYLES[index % STYLES.length];
+                const blogger = BLOGGERS[index % BLOGGERS.length] + (index > 2 ? ' · 返场' : '');
+
+                // 视频指标 (模拟第三方API)
+                const plays = rand(30, 380);        // 播放量 (百次) 展示时转万
+                const likes = rand(plays * 0.05, plays * 0.2);
+                const shares = rand(plays * 0.01, plays * 0.08);
+                const favorites = rand(plays * 0.02, plays * 0.1);
+                const completion = rand(45, 88);     // 完播率 %
+                const jumpRate = rand(2, 15);         // 商品跳转率 %
+
+                // 销售总和 (受播放量影响)
+                const totalOrders = Math.floor(plays * (jumpRate / 100) * rand(20, 40) / 100) + 1; // 至少1单
+                const totalRevenue = totalOrders * rand(180, 399);
+
+                // 随机拆分抖音和淘宝比例 (30%～70%)
+                const douyinPercent = rand(30, 70);
+                const taobaoPercent = 100 - douyinPercent;
+
+                const douyinRevenue = Math.floor(totalRevenue * douyinPercent / 100);
+                const taobaoRevenue = totalRevenue - douyinRevenue;
+                const douyinOrders = Math.floor(totalOrders * douyinPercent / 100) || 1;
+                const taobaoOrders = totalOrders - douyinOrders;
+
+                // 进店量、加购量也按相同比例拆分 (用于卡片展示，但视频卡片里只显示总和)
+                const totalShopEntries = Math.floor(plays * jumpRate / 100 * rand(40, 80) / 100);
+                const totalAddToCart = Math.floor(totalShopEntries * rand(20, 50) / 100);
+
+                // 投入成本
+                const cost = rand(800, 4500);
+                const roi = (totalRevenue / cost).toFixed(2);
+
+                return {
+                    id: index,
+                    blogger,
+                    style,
+                    videoStats: {
+                        plays,      // 单位 百
+                        likes,
+                        favorites,
+                        shares,
+                        completion,
+                        jumpRate
+                    },
+                    salesStats: {
+                        shopEntries: totalShopEntries,
+                        addToCart: totalAddToCart,
+                        orders: totalOrders,
+                        revenue: totalRevenue
+                    },
+                    platformDetail: {
+                        douyin: { revenue: douyinRevenue, orders: douyinOrders },
+                        taobao: { revenue: taobaoRevenue, orders: taobaoOrders }
+                    },
+                    cost,
+                    roi: parseFloat(roi)
+                };
+            }
+
+            // 生成全部视频 (3个)
+            function generateAllVideos() {
+                return [0, 1, 2].map(i => generateVideo(i));
+            }
+
+            // 计算汇总指标 (含双平台)
+            function computeSummary(videos) {
+                let totalRevenue = 0, totalOrders = 0, totalCost = 0;
+                let douyinRevenue = 0, taobaoRevenue = 0;
+                let douyinOrders = 0, taobaoOrders = 0;
+
+                videos.forEach(v => {
+                    totalRevenue += v.salesStats.revenue;
+                    totalOrders += v.salesStats.orders;
+                    totalCost += v.cost;
+                    douyinRevenue += v.platformDetail.douyin.revenue;
+                    taobaoRevenue += v.platformDetail.taobao.revenue;
+                    douyinOrders += v.platformDetail.douyin.orders;
+                    taobaoOrders += v.platformDetail.taobao.orders;
+                });
+
+                const avgRoi = (totalRevenue / totalCost).toFixed(1) || '0.0';
+                return {
+                    totalRevenue,
+                    totalOrders,
+                    totalCost,
+                    douyinRevenue,
+                    taobaoRevenue,
+                    douyinOrders,
+                    taobaoOrders,
+                    avgRoi
+                };
+            }
+
+            // 更新顶部卡片 (双平台分隔)
+            function updateSummaryUI(summary) {
+                document.getElementById('totalRevenue').innerText = `¥${(summary.totalRevenue/1000).toFixed(1)}k`;
+                document.getElementById('totalOrders').innerText = summary.totalOrders;
+                document.getElementById('avgRoi').innerText = `${summary.avgRoi}x`;
+                document.getElementById('totalCost').innerText = `¥${summary.totalCost}`;
+
+                document.getElementById('douyinRevenue').innerText = `¥${(summary.douyinRevenue/1000).toFixed(1)}k`;
+                document.getElementById('taobaoRevenue').innerText = `¥${(summary.taobaoRevenue/1000).toFixed(1)}k`;
+                document.getElementById('douyinOrders').innerText = summary.douyinOrders;
+                document.getElementById('taobaoOrders').innerText = summary.taobaoOrders;
+            }
+
+            // 渲染视频卡片
+            function renderVideoCards(videos) {
+                const container = document.getElementById('videoListContainer');
+                let htmlStr = '';
+                videos.forEach(v => {
+                    // 视频指标显示 (万)
+                    const playsW = (v.videoStats.plays / 10).toFixed(1);      // 百 -> 万
+                    const likesW = (v.videoStats.likes / 10).toFixed(1);
+                    const favoritesW = (v.videoStats.favorites / 10).toFixed(1);
+                    const sharesW = (v.videoStats.shares / 10).toFixed(1);
+
+                    // 销售总和
+                    const revenueY = v.salesStats.revenue;
+
+                    // ROI 样式
+                    const roiClass = v.roi >= 1.5 ? '' : 'neutral';
+                    const roiValue = v.roi.toFixed(1) + 'x';
+
+                    htmlStr += `
+                    <div class="video-card">
+                        <div class="video-header">
+                            <div class="blogger">
+                                <i class="fas fa-circle-user"></i>
+                                <div class="blogger-info">
+                                    ${v.blogger} <span class="style-tag">${v.style}</span>
+                                </div>
+                            </div>
+                            <div class="cost-badge"><i class="fas fa-tag"></i> 成本 ¥${v.cost}</div>
+                        </div>
+                        <!-- 视频核心指标 -->
+                        <div class="stats-grid">
+                            <div class="stat-cell"><div class="stat-value">${playsW}w</div><div class="stat-label">播放</div></div>
+                            <div class="stat-cell"><div class="stat-value">${likesW}w</div><div class="stat-label">点赞</div></div>
+                            <div class="stat-cell"><div class="stat-value">${favoritesW}w</div><div class="stat-label">收藏</div></div>
+                            <div class="stat-cell"><div class="stat-value">${sharesW}w</div><div class="stat-label">分享</div></div>
+                        </div>
+                        <div class="extra-stats">
+                            <span><i class="fa-regular fa-circle-check"></i> 完播 ${v.videoStats.completion}%</span>
+                            <span><i class="fa-regular fa-hand-pointer"></i> 跳转率 ${v.videoStats.jumpRate}%</span>
+                        </div>
+                        <!-- 双平台销售汇总 (进店/加购/下单/营业额) 这里只展示总和，体现视频总贡献 -->
+                        <div class="sales-row">
+                            <div class="sales-metrics">
+                                <div><span class="number">${v.salesStats.shopEntries}</span><br>进店</div>
+                                <div><span class="number">${v.salesStats.addToCart}</span><br>加购</div>
+                                <div><span class="number">${v.salesStats.orders}</span><br>下单</div>
+                                <div><span class="number">¥${v.salesStats.revenue}</span><br>营业额</div>
+                            </div>
+                            <div class="roi-indicator ${roiClass}"><i class="fa-solid fa-chart-simple"></i> ROI ${roiValue}</div>
+                        </div>
+                    </div>
+                    `;
+                });
+                container.innerHTML = htmlStr;
+            }
+
+            // 生成最近7天模拟趋势数据 (基于款式和基准)
+            function generateTrendData(styleName, basePlay = 200, baseSales = 1500) {
+                const days = 7;
+                const labels = [];
+                const playData = [];
+                const salesData = [];
+
+                const now = new Date();
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now);
+                    d.setDate(d.getDate() - i);
+                    labels.push(`${d.getMonth() + 1}/${d.getDate()}`);
+                }
+
+                // 模拟视频发布后热度上升
+                for (let i = 0; i < 7; i++) {
+                    let playFactor = 1.0;
+                    let salesFactor = 1.0;
+                    if (i < 2) {
+                        playFactor = 0.3;
+                        salesFactor = 0.2;
+                    } else if (i < 4) {
+                        playFactor = 0.8;
+                        salesFactor = 0.6;
+                    } else {
+                        playFactor = 1.2 + Math.random() * 0.4;
+                        salesFactor = 1.1 + Math.random() * 0.5;
+                    }
+
+                    const play = Math.floor(basePlay * playFactor * (0.8 + 0.4 * Math.random()));
+                    const sale = Math.floor(baseSales * salesFactor * (0.7 + 0.6 * Math.random()));
+                    playData.push(play);
+                    salesData.push(sale);
+                }
+                return { labels, playData, salesData };
+            }
+
+            // 更新图表 (取第一个视频作为代表)
+            function updateChartWithVideo(video) {
+                const ctx = document.getElementById('trendChart').getContext('2d');
+                // 销毁旧图表
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                // 生成与该视频款式匹配的趋势 (播放量/百, 销售额/元)
+                const basePlay = video.videoStats.plays; // 单位百
+                const baseSales = video.salesStats.revenue;
+                const { labels, playData, salesData } = generateTrendData(video.style, basePlay / 3, baseSales / 1.5);
+
+                // 调整单位：播放量转万 (除以10)，销售额转百元 (除以100)
+                const formattedPlay = playData.map(p => (p / 10).toFixed(1));
+                const formattedSales = salesData.map(s => (s / 100).toFixed(0));
+
+                try {
+                    chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                {
+                                    label: '播放量 (万次)',
+                                    data: formattedPlay,
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'rgba(59,130,246,0.05)',
+                                    tension: 0.2,
+                                    pointBackgroundColor: '#3b82f6',
+                                    yAxisID: 'y',
+                                },
+                                {
+                                    label: '销售额 (百元)',
+                                    data: formattedSales,
+                                    borderColor: '#eab308',
+                                    backgroundColor: 'rgba(234,179,8,0.03)',
+                                    borderDash: [5, 3],
+                                    tension: 0.2,
+                                    pointBackgroundColor: '#eab308',
+                                    yAxisID: 'y1',
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: { mode: 'index' }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    grid: { color: '#f0f2f5' },
+                                    title: { display: false }
+                                },
+                                y1: {
+                                    position: 'right',
+                                    beginAtZero: true,
+                                    grid: { drawOnChartArea: false },
+                                    title: { display: false }
+                                }
+                            }
+                        }
+                    });
+
+                    // 更新图表标题
+                    document.getElementById('chartStyleLabel').innerHTML = `「${video.style}」播放量 vs 销售额趋势`;
+                } catch (e) {
+                    console.warn('图表渲染错误:', e);
+                }
+            }
+
+            // 主刷新函数
+            function refreshAllData() {
+                const newVideos = generateAllVideos();
+                videos = newVideos;
+
+                // 渲染卡片
+                renderVideoCards(videos);
+
+                // 更新汇总
+                const summary = computeSummary(videos);
+                updateSummaryUI(summary);
+
+                // 更新图表（用第一个视频）
+                if (videos.length > 0) {
+                    updateChartWithVideo(videos[0]);
+                }
+            }
+
+            // 首次加载执行
+            refreshAllData();
+
+            // 绑定刷新按钮事件
+            document.getElementById('refreshDataBtn').addEventListener('click', function() {
+                refreshAllData();
+            });
+        }); // DOMContentLoaded 结束
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>服装自媒体 · 数据监控平台</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: #f5f7fb;
+            padding: 16px 12px 32px;
+            min-height: 100vh;
+        }
+        .dashboard {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header h1 i {
+            color: #f97316;
+        }
+        .refresh-btn {
+            background: white;
+            border: none;
+            border-radius: 40px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e2e8f0;
+            backdrop-filter: blur(2px);
+        }
+        .refresh-btn:active {
+            background: #f0f9ff;
+        }
+
+        /* 顶部摘要卡片 */
+        .summary-cards {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .summary-item {
+            background: white;
+            border-radius: 20px;
+            padding: 14px 16px;
+            flex: 1 1 0;
+            min-width: 130px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid #f0f2f5;
+        }
+        .summary-item .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .summary-item .value {
+            font-size: 1.6rem;
+            font-weight: 650;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+        .platform-breakdown {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 6px;
+        }
+        .platform-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #f8fafc;
+            border-radius: 30px;
+            padding: 4px 8px;
+            min-width: 70px;
+        }
+        .platform-item.douyin {
+            color: #2563eb;
+        }
+        .platform-item.taobao {
+            color: #ea580c;
+        }
+        .platform-item .amount {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            font-size: 0.7rem;
+            color: #475569;
+        }
+
+        /* 款式筛选行 (带注释) */
+        .style-filter-row {
+            background: white;
+            border-radius: 30px;
+            padding: 12px 16px;
+            margin: 16px 0 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #eef2f6;
+            position: relative;
+        }
+        .style-filter-row i {
+            color: #f97316;
+            font-size: 1rem;
+        }
+        .style-filter-row select {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1e293b;
+            outline: none;
+            padding: 4px 0;
+        }
+        .filter-hint {
+            position: absolute;
+            right: 16px;
+            top: -8px;
+            background: #f97316;
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 8px;
+            border-radius: 40px;
+            pointer-events: none;
+            opacity: 0.9;
+        }
+
+        /* 款式汇总卡片 (带变化值) */
+        .style-summary {
+            background: #ffffffd0;
+            backdrop-filter: blur(4px);
+            border-radius: 26px;
+            padding: 14px 18px;
+            margin: 8px 0 18px;
+            border: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.02);
+        }
+        .style-summary-item {
+            text-align: center;
+            flex: 1;
+        }
+        .style-summary-item .label {
+            font-size: 0.7rem;
+            color: #64748b;
+            letter-spacing: 0.3px;
+        }
+        .style-summary-item .value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 2px;
+        }
+        .style-summary-item .trend {
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+        .trend-up { color: #dc2626; }
+        .trend-down { color: #16a34a; }
+        .trend-zero { color: #9ca3af; }
+
+        /* 视频卡片列表 */
+        .video-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: 10px 0 28px;
+        }
+        .video-card {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.02);
+            border: 1px solid #f1f4f9;
+        }
+        .video-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .blogger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .blogger i {
+            font-size: 1.2rem;
+            color: #ff5e7c;
+            background: #ffe4e8;
+            border-radius: 40px;
+            padding: 6px;
+        }
+        .blogger-info {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .blogger-info .style-tag {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #6b7280;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 40px;
+            margin-left: 6px;
+        }
+        .cost-badge {
+            background: #f1f5f9;
+            border-radius: 40px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 12px 0 8px;
+        }
+        .stat-cell {
+            text-align: center;
+        }
+        .stat-value {
+            font-weight: 650;
+            font-size: 1rem;
+            color: #1e293b;
+            line-height: 1.3;
+        }
+        .stat-label {
+            font-size: 0.6rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .change-indicator {
+            font-size: 0.6rem;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        .change-up { color: #dc2626; }
+        .change-down { color: #16a34a; }
+        .change-zero { color: #9ca3af; }
+        .extra-stats {
+            display: flex;
+            gap: 16px;
+            padding: 8px 0;
+            border-top: 1px dashed #e9edf2;
+            border-bottom: 1px dashed #e9edf2;
+            font-size: 0.8rem;
+            color: #334155;
+            flex-wrap: wrap;
+        }
+        .extra-stats span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .extra-stats .change-indicator {
+            margin-left: 4px;
+            font-size: 0.6rem;
+        }
+
+        /* 博主筛选器 */
+        .blogger-filter-row {
+            background: #f8fafc;
+            border-radius: 30px;
+            padding: 8px 16px;
+            margin: 10px 0 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .blogger-filter-row i {
+            color: #8b5cf6;
+            font-size: 0.9rem;
+        }
+        .blogger-filter-row select {
+            flex: 1;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #1e293b;
+            outline: none;
+            padding: 4px 0;
+        }
+        .blogger-filter-row.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 趋势图表区 */
+        .chart-section {
+            margin-top: 20px;
+        }
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 650;
+            color: #1e293b;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-left: 5px solid #f97316;
+            padding-left: 12px;
+        }
+        .chart-container {
+            background: white;
+            border-radius: 26px;
+            padding: 18px 12px 12px;
+            border: 1px solid #ecf1f7;
+        }
+        .chart-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1f2a41;
+            margin-bottom: 8px;
+            padding-left: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .chart-box {
+            height: 180px;
+            width: 100%;
+            position: relative;
+        }
+        .platform-note {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 8px;
+            font-size: 0.6rem;
+            color: #475569;
+            flex-wrap: wrap;
+        }
+
+        /* 数据监控配置区域 */
+        .monitor-section {
+            margin-top: 30px;
+            background: white;
+            border-radius: 26px;
+            padding: 18px 16px 20px;
+            border: 1px solid #ecf1f7;
+        }
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .monitor-header h3 {
+            font-size: 1rem;
+            font-weight: 650;
+            color: #1e293b;
+        }
+        .add-btn {
+            background: #f97316;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 400;
+            border: none;
+            box-shadow: 0 4px 10px rgba(249,115,22,0.3);
+        }
+        .rule-list {
+            margin: 12px 0 16px;
+            max-height: 120px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border-radius: 18px;
+            padding: 10px;
+            font-size: 0.75rem;
+            color: #1e293b;
+        }
+        .rule-item {
+            padding: 6px 0;
+            border-bottom: 1px dashed #d1d5db;
+            display: flex;
+            gap: 6px;
+        }
+        .rule-item:last-child {
+            border-bottom: none;
+        }
+        .mock-wechat {
+            background: #eef2ff;
+            border-radius: 24px;
+            padding: 16px;
+            margin-top: 10px;
+            border-left: 4px solid #3b82f6;
+        }
+        .wechat-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .wechat-header i {
+            color: #3b82f6;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
+        }
+        .wechat-message {
+            background: white;
+            border-radius: 18px;
+            padding: 12px;
+            font-size: 0.8rem;
+            color: #0f172a;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+        .wechat-message i {
+            color: #f97316;
+            margin-right: 4px;
+        }
+
+        /* 弹窗 (modal) */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 80%;
+            overflow-y: auto;
+            padding: 24px 20px;
+            box-shadow: 0 20px 30px rgba(0,0,0,0.2);
+        }
+        .modal-content h4 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .modal-field {
+            margin-bottom: 18px;
+        }
+        .modal-field label {
+            display: block;
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .modal-field select, .modal-field .checkbox-group {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            background: #f9fafc;
+            font-size: 0.9rem;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.85rem;
+            color: #1e293b;
+        }
+        .percent-select {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .percent-select button {
+            background: #f1f5f9;
+            border: none;
+            border-radius: 30px;
+            padding: 6px 14px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #334155;
+        }
+        .percent-select button.selected {
+            background: #f97316;
+            color: white;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+        }
+        .btn-cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .btn-confirm {
+            background: #f97316;
+            color: white;
+        }
+
+        .footer-note {
+            text-align: center;
+            font-size: 0.6rem;
+            color: #a0afbe;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <div class="header">
+        <h1><i class="fa-solid fa-sitemap"></i> CATSSTAC · 数据监控中心</h1>
+        <button class="refresh-btn" id="refreshDataBtn"><i class="fas fa-sync-alt"></i> 刷新</button>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <span style="font-weight: 600; font-size: 1rem; color:#1e293b;"><i class="fa-solid fa-chart-pie" style="margin-right: 6px;"></i>双平台营业额数据汇总</span>
+        <span style="color:#3b82f6; font-size:0.7rem;">数据来源于抖音与淘宝</span>
+    </div>
+
+    <!-- 汇总卡片 -->
+    <div class="summary-cards">
+        <div class="summary-item">
+            <div class="label">总销售额</div>
+            <div class="value" id="totalRevenue">¥0</div>
+            <div class="platform-breakdown">
+                <div class="platform-item douyin"><i class="fab fa-tiktok"></i> <span class="amount" id="douyinRevenue">¥0</span></div>
+                <div class="platform-item taobao"><i class="fab fa-alipay"></i> <span class="amount" id="taobaoRevenue">¥0</span></div>
+            </div>
+        </div>
+        <div class="summary-item">
+            <div class="label">总订单</div>
+            <div class="value" id="totalOrders">0</div>
+            <div class="platform-breakdown">
+                <div class="platform-item douyin"><i class="fab fa-tiktok"></i> <span class="amount" id="douyinOrders">0</span></div>
+                <div class="platform-item taobao"><i class="fab fa-alipay"></i> <span class="amount" id="taobaoOrders">0</span></div>
+            </div>
+        </div>
+        <div class="summary-item">
+            <div class="label">平均 ROI</div>
+            <div class="value" id="avgRoi">0.0x</div>
+            <div class="cost-row">
+                <span><i class="fa-regular fa-credit-card"></i> 总成本</span>
+                <span id="totalCost">¥0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 款式筛选器 (带注释) -->
+    <div class="style-filter-row">
+        <i class="fas fa-tag"></i>
+        <select id="styleFilter" aria-label="选择款式">
+            <option value="">全部款式</option>
+        </select>
+        <span class="filter-hint">👆 点击筛选款式</span>
+    </div>
+
+    <!-- 选中款式的产品汇总卡片 (带变化值) -->
+    <div id="styleSummaryCard" class="style-summary" style="display: none;">
+        <div class="style-summary-item">
+            <div class="label">款式销售额</div>
+            <div class="value" id="styleRevenue">¥0</div>
+            <div class="trend" id="styleRevenueTrend"></div>
+        </div>
+        <div class="style-summary-item">
+            <div class="label">款式订单</div>
+            <div class="value" id="styleOrders">0</div>
+            <div class="trend" id="styleOrdersTrend"></div>
+        </div>
+        <div class="style-summary-item">
+            <div class="label">款式平均ROI</div>
+            <div class="value" id="StyleAvgRoi">0.0x</div>
+            <div class="trend" id="styleRoiTrend"></div>
+        </div>
+    </div>
+
+    <!-- 视频列表标题 -->
+    <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+        <span style="font-weight: 600; font-size: 1rem; color:#1e293b;"><i class="fas fa-video" style="margin-right: 6px;"></i>正在监控的带货视频</span>
+        <span style="color:#3b82f6; font-size:0.7rem;">API 限额 300次/日</span>
+    </div>
+    <div id="videoListContainer" class="video-feed">
+        <!-- 动态渲染 -->
+    </div>
+
+    
+
+    <!-- 趋势图区域 -->
+    <div class="chart-section">
+        <div class="section-title">
+            <i class="fas fa-chart-line" style="color:#f97316;"></i> 款式销售趋势匹配与监控
+        </div>
+        <!-- 博主筛选器 (动态) -->
+        <div id="bloggerFilterContainer" class="style-filter-row" style="display: none;">
+            <i class="fas fa-user"></i>
+            <select id="bloggerFilter" aria-label="选择博主">
+                <option value="">请先选择款式</option>
+            </select>
+        </div>
+        <div class="chart-container">
+            <div class="chart-title" id="chartStyleLabel">「款式」播放量 vs 销售额趋势</div>
+            <div class="chart-box"><canvas id="trendChart"></canvas></div>
+            <div class="platform-note">
+                <span><i class="fas fa-eye" style="color:#3b82f6;"></i> 播放量 (万次)</span>
+                <span><i class="fas fa-coins" style="color:#eab308;"></i> 销售额 (百元)</span>
+                <span><i class="fas fa-thumbs-up" style="color:#8b5cf6;"></i> 点赞+收藏 (万次)</span>
+                <span><i class="fas fa-share" style="color:#10b981;"></i> 分享 (万次)</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据监控配置区域 -->
+    <div class="monitor-section">
+        <div class="monitor-header">
+            <h3><i class="fas fa-bell" style="margin-right: 6px; color:#f97316;"></i> 数据监控配置</h3>
+            <button class="add-btn" id="openModalBtn"><i class="fas fa-plus"></i></button>
+        </div>
+        <!-- 监控规则列表 -->
+        <div class="rule-list" id="ruleList">
+            <div class="rule-item">👉 牛仔外套 · @潮男阿杰 · 分享 > 10% 触发</div>
+        </div>
+        <!-- 模拟微信消息窗口 -->
+        <div class="mock-wechat" id="wechatMock">
+            <div class="wechat-header">
+                <i class="fab fa-weixin"></i> AI数据监控助手（消息将推送至您的微信）
+            </div>
+            <div class="wechat-message" id="wechatMessage">
+                <i class="fas fa-exclamation-circle"></i> @潮男阿杰 带货的 牛仔外套 视频的分享次数 激增10%
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">⚡ 5秒自动刷新 · 监控规则可配置 · 模拟微信提醒</div>
+</div>
+
+<!-- 弹窗 (modal) -->
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h4><i class="fas fa-sliders-h" style="color:#f97316;"></i> 新建监控规则</h4>
+        
+        <div class="modal-field">
+            <label>选择款式</label>
+            <select id="modalStyle">
+                <option value="">请选择款式</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>选择博主</label>
+            <select id="modalBlogger" disabled>
+                <option value="">先选款式</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>选择视频 (博主下唯一视频，自动填充)</label>
+            <select id="modalVideo" disabled>
+                <option value="">自动识别</option>
+            </select>
+        </div>
+        <div class="modal-field">
+            <label>监控的数据指标 (可多选)</label>
+            <div class="checkbox-group" id="modalMetrics">
+                <label><input type="checkbox" value="播放"> 播放</label>
+                <label><input type="checkbox" value="点赞"> 点赞</label>
+                <label><input type="checkbox" value="收藏"> 收藏</label>
+                <label><input type="checkbox" value="分享"> 分享</label>
+                <label><input type="checkbox" value="完播率"> 完播率</label>
+                <label><input type="checkbox" value="跳转率"> 跳转率</label>
+            </div>
+        </div>
+        <div class="modal-field">
+            <label>变动阈值</label>
+            <div class="percent-select" id="percentSelect">
+                <button data-pct="1">1%</button>
+                <button data-pct="2">2%</button>
+                <button data-pct="3">3%</button>
+                <button data-pct="5">5%</button>
+                <button data-pct="10">10%</button>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="closeModalBtn">取消</button>
+            <button class="btn-confirm" id="confirmRuleBtn">确定</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // ---------- 模拟数据配置 ----------
+            const STYLES = ['哈灵顿二代','哈灵顿二代', '暗月天丝条纹衬衫', '幽灵水洗帆布夹克', '玄烬灰康龙牛仔裤', '墨竹条纹西裤'];
+            const BLOGGERS = ['@时尚小C', '@潮男阿杰', '@小野爱穿搭', '@街拍大A', '@穿搭小七'];
+
+            let videos = [];
+            let chartInstance = null;
+            let currentStyle = '';       // 当前选中的款式
+            let currentBlogger = '';      // 当前选中的博主
+            let refreshInterval = null;
+
+            // 监控规则数组 (用于展示)
+            let rules = [
+                { style: '哈灵顿二代', blogger: '@潮男阿杰', metrics: ['分享'], pct: 10 }
+            ];
+
+            // 工具函数
+            const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+            // 生成历史数据
+            function generateHistory(basePlays, baseLikes, baseFav, baseShares, baseSales) {
+                const days = 7;
+                const dates = [], plays = [], likes = [], fav = [], shares = [], sales = [];
+                const now = new Date();
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now); d.setDate(d.getDate() - i);
+                    dates.push(`${d.getMonth()+1}/${d.getDate()}`);
+                }
+                for (let i = 0; i < days; i++) {
+                    let factor = i < 2 ? 0.3+0.3*Math.random() : (i < 4 ? 0.7+0.4*Math.random() : 1.1+0.6*Math.random());
+                    plays.push(Math.floor(basePlays * factor));
+                    likes.push(Math.floor(baseLikes * factor * (0.9+0.2*Math.random())));
+                    fav.push(Math.floor(baseFav * factor * (0.9+0.2*Math.random())));
+                    shares.push(Math.floor(baseShares * factor * (0.9+0.3*Math.random())));
+                    sales.push(Math.floor(baseSales * factor * (0.8+0.4*Math.random())));
+                }
+                return { dates, plays, likes, fav, shares, sales };
+            }
+
+            // 生成视频对象
+            function generateVideo(index) {
+                const style = STYLES[index % STYLES.length];
+                const blogger = BLOGGERS[index % BLOGGERS.length] + (index > 3 ? ' · 返场' : '');
+                const basePlays = rand(200, 600);
+                const baseLikes = rand(basePlays*0.1, basePlays*0.3);
+                const baseFav = rand(basePlays*0.05, basePlays*0.2);
+                const baseShares = rand(basePlays*0.02, basePlays*0.12);
+                const baseCompletion = rand(40,90);
+                const baseJump = rand(3,18);
+                const baseOrders = rand(5,50);
+                const baseRevenue = baseOrders * rand(150,420);
+
+                const playsChange = rand(-40,60);
+                const likesChange = rand(-30,50);
+                const favChange = rand(-20,40);
+                const sharesChange = rand(-15,35);
+                const compChange = rand(-8,12);
+                const jumpChange = rand(-4,8);
+
+                const plays = Math.max(10, basePlays + playsChange);
+                const likes = Math.max(5, baseLikes + likesChange);
+                const fav = Math.max(2, baseFav + favChange);
+                const shares = Math.max(1, baseShares + sharesChange);
+                const completion = Math.min(99, Math.max(10, baseCompletion + compChange));
+                const jumpRate = Math.min(35, Math.max(1, baseJump + jumpChange));
+                const orders = Math.max(1, baseOrders + rand(-5,10));
+                const revenue = Math.max(100, baseRevenue + rand(-2000,3000));
+
+                const cost = rand(600,5000);
+                const douyinPercent = rand(30,70);
+                const taobaoPercent = 100 - douyinPercent;
+                const douyinRevenue = Math.floor(revenue * douyinPercent / 100);
+                const taobaoRevenue = revenue - douyinRevenue;
+                const douyinOrders = Math.floor(orders * douyinPercent / 100) || 1;
+                const taobaoOrders = orders - douyinOrders;
+
+                const history = generateHistory(plays, likes, fav, shares, revenue);
+
+                return {
+                    id: index,
+                    blogger,
+                    style,
+                    cost,
+                    stats: {
+                        plays, likes, fav, shares, completion, jumpRate,
+                        changes: { plays: playsChange, likes: likesChange, fav: favChange, shares: sharesChange, completion: compChange, jump: jumpChange }
+                    },
+                    platformDetail: { douyin: { revenue: douyinRevenue, orders: douyinOrders }, taobao: { revenue: taobaoRevenue, orders: taobaoOrders } },
+                    revenue,
+                    orders,
+                    history
+                };
+            }
+
+            function generateAllVideos() {
+                return Array.from({ length: 12 }, (_, i) => generateVideo(i));
+            }
+
+            // 计算全局汇总
+            function computeGlobalSummary(videos) {
+                let totalRevenue=0, totalOrders=0, totalCost=0, douyinRevenue=0, taobaoRevenue=0, douyinOrders=0, taobaoOrders=0;
+                videos.forEach(v => {
+                    totalRevenue += v.revenue;
+                    totalOrders += v.orders;
+                    totalCost += v.cost;
+                    douyinRevenue += v.platformDetail.douyin.revenue;
+                    taobaoRevenue += v.platformDetail.taobao.revenue;
+                    douyinOrders += v.platformDetail.douyin.orders;
+                    taobaoOrders += v.platformDetail.taobao.orders;
+                });
+                const avgRoi = totalCost>0 ? (totalRevenue/totalCost).toFixed(1) : '0.0';
+                return { totalRevenue, totalOrders, totalCost, douyinRevenue, taobaoRevenue, douyinOrders, taobaoOrders, avgRoi };
+            }
+
+            // 计算款式汇总 (带前后变化模拟)
+            function computeStyleSummary(videos, style) {
+                if (!style) return null;
+                const styleVideos = videos.filter(v => v.style === style);
+                if (styleVideos.length === 0) return null;
+                let totalRevenue=0, totalOrders=0, totalCost=0;
+                styleVideos.forEach(v => {
+                    totalRevenue += v.revenue;
+                    totalOrders += v.orders;
+                    totalCost += v.cost;
+                });
+                const avgRoi = totalCost>0 ? (totalRevenue/totalCost).toFixed(1) : '0.0';
+
+                // 模拟变化值 (基于随机，与上次比较)
+                const lastRevenue = totalRevenue * (1 + (Math.random()*0.2 - 0.1));
+                const lastOrders = totalOrders * (1 + (Math.random()*0.2 - 0.1));
+                const lastRoi = parseFloat(avgRoi) * (1 + (Math.random()*0.15 - 0.075));
+                return {
+                    totalRevenue,
+                    totalOrders,
+                    avgRoi,
+                    changes: {
+                        revenue: ((totalRevenue - lastRevenue)/lastRevenue * 100).toFixed(1),
+                        orders: ((totalOrders - lastOrders)/lastOrders * 100).toFixed(1),
+                        roi: ((parseFloat(avgRoi) - lastRoi)/lastRoi * 100).toFixed(1)
+                    }
+                };
+            }
+
+            // 更新全局UI
+            function updateGlobalUI(summary) {
+                document.getElementById('totalRevenue').innerText = `¥${(summary.totalRevenue/1000).toFixed(1)}k`;
+                document.getElementById('totalOrders').innerText = summary.totalOrders;
+                document.getElementById('avgRoi').innerText = `${summary.avgRoi}x`;
+                document.getElementById('totalCost').innerText = `¥${summary.totalCost}`;
+                document.getElementById('douyinRevenue').innerText = `¥${(summary.douyinRevenue/1000).toFixed(1)}k`;
+                document.getElementById('taobaoRevenue').innerText = `¥${(summary.taobaoRevenue/1000).toFixed(1)}k`;
+                document.getElementById('douyinOrders').innerText = summary.douyinOrders;
+                document.getElementById('taobaoOrders').innerText = summary.taobaoOrders;
+            }
+
+            // 更新款式汇总卡片 (带变化趋势)
+            function updateStyleSummaryUI(style) {
+                const card = document.getElementById('styleSummaryCard');
+                const styleSum = computeStyleSummary(videos, style);
+                if (style && styleSum) {
+                    document.getElementById('styleRevenue').innerText = `¥${(styleSum.totalRevenue/1000).toFixed(1)}k`;
+                    document.getElementById('styleOrders').innerText = styleSum.totalOrders;
+                    document.getElementById('StyleAvgRoi').innerText = `${styleSum.avgRoi}x`;
+
+                    const setTrend = (elId, val) => {
+                        const el = document.getElementById(elId);
+                        const num = parseFloat(val);
+                        if (num > 0) el.innerHTML = `↑ ${num}%`; else if (num < 0) el.innerHTML = `↓ ${Math.abs(num)}%`; else el.innerHTML = '0%';
+                        el.className = num > 0 ? 'trend trend-up' : (num < 0 ? 'trend trend-down' : 'trend trend-zero');
+                    };
+                    setTrend('styleRevenueTrend', styleSum.changes.revenue);
+                    setTrend('styleOrdersTrend', styleSum.changes.orders);
+                    setTrend('styleRoiTrend', styleSum.changes.roi);
+
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            }
+
+            // 更新款式下拉
+            function updateStyleFilter(videos, currentStyle) {
+                const select = document.getElementById('styleFilter');
+                const styles = [...new Set(videos.map(v => v.style))].sort();
+                let options = '<option value="">全部款式</option>';
+                styles.forEach(s => { options += `<option value="${s}" ${s===currentStyle?'selected':''}>${s}</option>`; });
+                select.innerHTML = options;
+                if (currentStyle && !styles.includes(currentStyle)) return '';
+                return currentStyle;
+            }
+
+            // 更新博主下拉
+            function updateBloggerFilter(videos, style, currentBlogger) {
+                const container = document.getElementById('bloggerFilterContainer');
+                const select = document.getElementById('bloggerFilter');
+                if (!style) { container.style.display = 'none'; container.classList.add('disabled'); return ''; }
+                container.style.display = 'flex'; container.classList.remove('disabled');
+                const bloggers = [...new Set(videos.filter(v => v.style === style).map(v => v.blogger))].sort();
+                let options = '<option value="">选择博主</option>';
+                bloggers.forEach(b => { options += `<option value="${b}" ${b===currentBlogger?'selected':''}>${b}</option>`; });
+                select.innerHTML = options;
+                if (currentBlogger && !bloggers.includes(currentBlogger)) return '';
+                return currentBlogger;
+            }
+
+            // 渲染视频卡片
+            function renderVideoCards(videos, style) {
+                const container = document.getElementById('videoListContainer');
+                let filtered = style ? videos.filter(v => v.style === style) : videos;
+                if (filtered.length === 0) { container.innerHTML = '<div style="text-align:center; padding:30px; color:#94a3b8;">暂无视频</div>'; return; }
+
+                let html = '';
+                filtered.forEach(v => {
+                    const s = v.stats, ch = s.changes;
+                    const playsW = (s.plays/10).toFixed(1), likesW = (s.likes/10).toFixed(1), favW = (s.fav/10).toFixed(1), sharesW = (s.shares/10).toFixed(1);
+                    const changeHtml = (val, unit='') => {
+                        let cls='change-zero', sym='•'; if(val>0){ cls='change-up'; sym='↑'; } else if(val<0){ cls='change-down'; sym='↓'; }
+                        return `<span class="change-indicator ${cls}">${sym} ${Math.abs(val)}${unit}</span>`;
+                    };
+                    html += `<div class="video-card"><div class="video-header"><div class="blogger"><i class="fas fa-circle-user"></i><div class="blogger-info">${v.blogger} <span class="style-tag">${v.style}</span></div></div><div class="cost-badge"><i class="fas fa-tag"></i> 成本 ¥${v.cost}</div></div>
+                    <div class="stats-grid"><div class="stat-cell"><div class="stat-value">${playsW}w</div><div class="stat-label">播放</div>${changeHtml((ch.plays/10).toFixed(1),'w')}</div>
+                    <div class="stat-cell"><div class="stat-value">${likesW}w</div><div class="stat-label">点赞</div>${changeHtml((ch.likes/10).toFixed(1),'w')}</div>
+                    <div class="stat-cell"><div class="stat-value">${favW}w</div><div class="stat-label">收藏</div>${changeHtml((ch.fav/10).toFixed(1),'w')}</div>
+                    <div class="stat-cell"><div class="stat-value">${sharesW}w</div><div class="stat-label">分享</div>${changeHtml((ch.shares/10).toFixed(1),'w')}</div></div>
+                    <div class="extra-stats"><span><i class="fa-regular fa-circle-check"></i> 完播 ${s.completion}% ${changeHtml(ch.completion,'%')}</span><span><i class="fa-regular fa-hand-pointer"></i> 跳转率 ${s.jumpRate}% ${changeHtml(ch.jump,'%')}</span></div></div>`;
+                });
+                container.innerHTML = html;
+            }
+
+            // 获取图表视频
+            function getChartVideo(style, blogger) {
+                if (!style) return null;
+                let candidates = videos.filter(v => v.style === style);
+                if (blogger) { let exact = candidates.find(v => v.blogger === blogger); if (exact) return exact; }
+                return candidates[0] || null;
+            }
+
+            // 更新图表
+            function updateChart(style, blogger) {
+                const ctx = document.getElementById('trendChart').getContext('2d');
+                if (chartInstance) chartInstance.destroy();
+                const video = getChartVideo(style, blogger);
+                if (!video) return;
+                const hist = video.history;
+                const playData = hist.plays.map(p => (p/10).toFixed(1));
+                const salesData = hist.sales.map(s => (s/100).toFixed(0));
+                const likeFavData = hist.likes.map((l,i)=> ((l+hist.fav[i])/10).toFixed(1));
+                const shareData = hist.shares.map(s=>(s/10).toFixed(1));
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: hist.dates,
+                        datasets: [
+                            { label:'播放量 (万次)', data:playData, borderColor:'#3b82f6', backgroundColor:'transparent', tension:0.2, pointBackgroundColor:'#3b82f6', yAxisID:'y' },
+                            { label:'销售额 (百元)', data:salesData, borderColor:'#eab308', backgroundColor:'transparent', borderDash:[5,3], tension:0.2, pointBackgroundColor:'#eab308', yAxisID:'y1' },
+                            { label:'点赞+收藏 (万次)', data:likeFavData, borderColor:'#8b5cf6', backgroundColor:'transparent', borderDash:[2,2], tension:0.2, pointBackgroundColor:'#8b5cf6', yAxisID:'y' },
+                            { label:'分享 (万次)', data:shareData, borderColor:'#10b981', backgroundColor:'transparent', borderDash:[4,2], tension:0.2, pointBackgroundColor:'#10b981', yAxisID:'y' }
+                        ]
+                    },
+                    options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false }, tooltip:{ mode:'index' } }, scales:{ y:{ beginAtZero:true, grid:{color:'#f0f2f5'} }, y1:{ position:'right', beginAtZero:true, grid:{ drawOnChartArea:false } } } }
+                });
+                document.getElementById('chartStyleLabel').innerHTML = `「${video.style}」- ${video.blogger} 视频趋势`;
+            }
+
+            // 刷新所有数据
+            function refreshAllData() {
+                videos = generateAllVideos();
+                currentStyle = updateStyleFilter(videos, currentStyle);
+                currentBlogger = updateBloggerFilter(videos, currentStyle, currentBlogger);
+                updateStyleSummaryUI(currentStyle);
+                renderVideoCards(videos, currentStyle);
+                updateGlobalUI(computeGlobalSummary(videos));
+                if (currentStyle) updateChart(currentStyle, currentBlogger);
+                else if (videos.length>0) {
+                    currentStyle = videos[0].style;
+                    document.getElementById('styleFilter').value = currentStyle;
+                    currentBlogger = updateBloggerFilter(videos, currentStyle, '');
+                    updateStyleSummaryUI(currentStyle);
+                    renderVideoCards(videos, currentStyle);
+                    updateChart(currentStyle, currentBlogger);
+                }
+            }
+
+            // 监听款式变化
+            document.getElementById('styleFilter').addEventListener('change', function(e) {
+                currentStyle = e.target.value;
+                currentBlogger = '';
+                currentBlogger = updateBloggerFilter(videos, currentStyle, currentBlogger);
+                updateStyleSummaryUI(currentStyle);
+                renderVideoCards(videos, currentStyle);
+                if (currentStyle) updateChart(currentStyle, currentBlogger);
+                else { if(chartInstance) chartInstance.destroy(); document.getElementById('chartStyleLabel').innerHTML = '请选择款式查看趋势'; }
+            });
+
+            document.getElementById('bloggerFilter').addEventListener('change', function(e) {
+                currentBlogger = e.target.value;
+                if (currentStyle) updateChart(currentStyle, currentBlogger);
+            });
+
+            document.getElementById('refreshDataBtn').addEventListener('click', refreshAllData);
+            refreshInterval = setInterval(refreshAllData, 5000);
+            refreshAllData();
+
+            // ---------- 监控配置弹窗逻辑 ----------
+            const modal = document.getElementById('modal');
+            const openBtn = document.getElementById('openModalBtn');
+            const closeBtn = document.getElementById('closeModalBtn');
+            const confirmBtn = document.getElementById('confirmRuleBtn');
+            const modalStyle = document.getElementById('modalStyle');
+            const modalBlogger = document.getElementById('modalBlogger');
+            const modalVideo = document.getElementById('modalVideo');
+            const percentBtns = document.querySelectorAll('#percentSelect button');
+            let selectedPct = 5; // 默认
+            percentBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    percentBtns.forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedPct = parseInt(this.dataset.pct);
+                });
+            });
+            percentBtns.forEach(b => { if(b.dataset.pct == '5') b.classList.add('selected'); });
+
+            openBtn.addEventListener('click', () => {
+                // 填充款式下拉
+                const styles = [...new Set(videos.map(v=>v.style))].sort();
+                modalStyle.innerHTML = '<option value="">请选择款式</option>' + styles.map(s => `<option value="${s}">${s}</option>`).join('');
+                modalBlogger.innerHTML = '<option value="">先选款式</option>';
+                modalBlogger.disabled = true;
+                modalVideo.innerHTML = '<option value="">自动识别</option>';
+                modalVideo.disabled = true;
+                modal.classList.add('active');
+            });
+
+            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+
+            modalStyle.addEventListener('change', function() {
+                const style = this.value;
+                if (!style) {
+                    modalBlogger.innerHTML = '<option value="">先选款式</option>';
+                    modalBlogger.disabled = true;
+                    modalVideo.disabled = true;
+                    return;
+                }
+                const bloggers = [...new Set(videos.filter(v=>v.style===style).map(v=>v.blogger))].sort();
+                modalBlogger.innerHTML = '<option value="">选择博主</option>' + bloggers.map(b => `<option value="${b}">${b}</option>`).join('');
+                modalBlogger.disabled = false;
+                modalVideo.disabled = false;
+            });
+
+            modalBlogger.addEventListener('change', function() {
+                // 视频自动填充为博主下的第一个视频 (简化)
+                const style = modalStyle.value;
+                const blogger = this.value;
+                if (!style || !blogger) return;
+                const video = videos.find(v => v.style === style && v.blogger === blogger);
+                if (video) {
+                    modalVideo.innerHTML = `<option value="${video.id}">${video.blogger} - ${video.style}</option>`;
+                } else {
+                    modalVideo.innerHTML = '<option value="">无可选视频</option>';
+                }
+            });
+
+            confirmBtn.addEventListener('click', function() {
+                const style = modalStyle.value;
+                const blogger = modalBlogger.value;
+                const videoId = modalVideo.value; // 实际上我们只用博主款式信息
+                const metrics = Array.from(document.querySelectorAll('#modalMetrics input:checked')).map(cb => cb.value);
+                if (!style || !blogger || metrics.length === 0) {
+                    alert('请完整填写监控规则');
+                    return;
+                }
+                // 添加规则
+                const newRule = { style, blogger, metrics, pct: selectedPct };
+                rules.push(newRule);
+                // 更新规则列表显示
+                const ruleList = document.getElementById('ruleList');
+                const ruleItems = rules.slice(-3).map(r => `<div class="rule-item">👉 ${r.style} · ${r.blogger} · ${r.metrics.join('/')} > ${r.pct}%</div>`).join('');
+                ruleList.innerHTML = ruleItems;
+
+                // 模拟微信消息
+                const metricsStr = metrics.join('/');
+                const msg = `${blogger} 带货的 ${style} 视频的${metricsStr} 激增${selectedPct}%`;
+                document.getElementById('wechatMessage').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${msg}`;
+
+                modal.classList.remove('active');
+            });
+
+            window.addEventListener('beforeunload', () => clearInterval(refreshInterval));
+        });
+    })();
+</script>
+</body>
+</html>
